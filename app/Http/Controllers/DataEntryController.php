@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{DataEntry, Indicator, Notification, Project, User};
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class DataEntryController extends Controller
 {
+    use ApiResponseTrait;
     /**
      * Display a listing of data entries
      */
@@ -82,6 +84,47 @@ class DataEntryController extends Controller
     }
 
     /**
+     * Get data entries (API)
+     */
+    public function apiIndex(Request $request)
+    {
+        $query = DataEntry::with(['project', 'indicator', 'enteredBy', 'verifiedBy']);
+
+        // Apply filters
+        if ($request->has('project_id') && $request->project_id != '') {
+            $query->byProject($request->project_id);
+        }
+
+        if ($request->has('indicator_id') && $request->indicator_id != '') {
+            $query->byIndicator($request->indicator_id);
+        }
+
+        if ($request->has('frequency') && $request->frequency != '') {
+            $query->byFrequency($request->frequency);
+        }
+
+        if ($request->has('verification_status') && $request->verification_status != '') {
+            $query->byVerificationStatus($request->verification_status);
+        }
+
+        if ($request->has('date_from') && $request->date_from != '') {
+            $query->where('data_date', '>=', $request->date_from);
+        }
+
+        if ($request->has('date_to') && $request->date_to != '') {
+            $query->where('data_date', '<=', $request->date_to);
+        }
+
+        if ($request->has('search') && $request->search != '') {
+            $query->search($request->search);
+        }
+
+        $dataEntries = $query->latest()->paginate($request->per_page ?? 15);
+
+        return $this->paginatedResponse($dataEntries, 'Data entries retrieved successfully');
+    }
+
+    /**
      * Show the form for creating a new data entry
      */
     public function create()
@@ -120,9 +163,19 @@ class DataEntryController extends Controller
         // Notify relevant users
         $this->notifyRelevantUsers($dataEntry, 'created');
 
-        return redirect()
-            ->route('data-entries.show', $dataEntry)
-            ->with('success', 'Data entry created successfully!');
+        // Load relationships for response
+        $dataEntry->load([
+            'project',
+            'indicator',
+            'enteredBy',
+            'verifiedBy',
+        ]);
+
+        return $this->successResponse(
+            $dataEntry,
+            'Data entry created successfully!',
+            201
+        );
     }
 
     /**
@@ -130,9 +183,14 @@ class DataEntryController extends Controller
      */
     public function show(DataEntry $dataEntry)
     {
-        $dataEntry->load(['project', 'indicator', 'enterer', 'verifier']);
+        $dataEntry->load([
+            'project',
+            'indicator',
+            'enteredBy',
+            'verifiedBy',
+        ]);
 
-        return view('data-entries.show', compact('dataEntry'));
+        return $this->successResponse($dataEntry);
     }
 
     /**
@@ -178,9 +236,18 @@ class DataEntryController extends Controller
 
         $dataEntry->update($validated);
 
-        return redirect()
-            ->route('data-entries.show', $dataEntry)
-            ->with('success', 'Data entry updated successfully!');
+        // Load relationships for response
+        $dataEntry->load([
+            'project',
+            'indicator',
+            'enteredBy',
+            'verifiedBy',
+        ]);
+
+        return $this->successResponse(
+            $dataEntry,
+            'Data entry updated successfully!'
+        );
     }
 
     /**
@@ -194,9 +261,10 @@ class DataEntryController extends Controller
 
         $dataEntry->delete();
 
-        return redirect()
-            ->route('data-entries.index')
-            ->with('success', 'Data entry deleted successfully!');
+        return $this->successResponse(
+            null,
+            'Data entry deleted successfully!'
+        );
     }
 
     /**
@@ -398,11 +466,14 @@ class DataEntryController extends Controller
      */
     public function showApi(DataEntry $dataEntry)
     {
-        $dataEntry->load(['project', 'indicator', 'enterer', 'verifier']);
-        
-        return response()->json([
-            'data_entry' => $dataEntry->getSummary(),
+        $dataEntry->load([
+            'project',
+            'indicator',
+            'enteredBy',
+            'verifiedBy',
         ]);
+
+        return $this->successResponse($dataEntry);
     }
 
     /**

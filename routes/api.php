@@ -2,7 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{AuthController, DashboardController, UserController, ProjectController, ThemeController, IndicatorController, ExpenditureController, PhotoCaptureController, DataEntryController, NotificationController, ReportController};
+use App\Http\Controllers\{AuthController, DashboardController, UserController, ProjectController, ThemeController, IndicatorController, ExpenditureController, PhotoCaptureController, DataEntryController, NotificationController, ReportController, SyncController};
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +37,8 @@ Route::middleware(['auth:sanctum', 'user.active'])->prefix('v1')->group(function
     
     // Dashboard Routes
     Route::get('/dashboard', [DashboardController::class, 'apiDashboard']);
+    Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('/dashboard/project/{project}/stats', [DashboardController::class, 'projectStats']);
     Route::get('/dashboard/notifications', [DashboardController::class, 'getNotifications']);
     Route::post('/notifications/{id}/read', [DashboardController::class, 'markNotificationRead']);
     Route::post('/notifications/read-all', [DashboardController::class, 'markAllNotificationsRead']);
@@ -116,6 +118,12 @@ Route::middleware(['auth:sanctum', 'user.active'])->prefix('v1')->group(function
         Route::get('/photos/with-gps', [PhotoCaptureController::class, 'withGPS']);
         Route::post('/photos/{photo}/restore', [PhotoCaptureController::class, 'restore'])->middleware('can:update,photo');
         Route::post('/photos/bulk-delete', [PhotoCaptureController::class, 'bulkDelete'])->middleware('can:delete,App\\Models\\PhotoCapture');
+        
+        // Alias routes for Flutter frontend compatibility (photo-captures)
+        Route::get('/photo-captures', [PhotoCaptureController::class, 'apiIndex'])->middleware('can:viewAny,App\\Models\\PhotoCapture');
+        Route::post('/photo-captures', [PhotoCaptureController::class, 'uploadApi'])->middleware('can:create,App\\Models\\PhotoCapture');
+        Route::get('/photo-captures/{photo}', [PhotoCaptureController::class, 'showApi'])->middleware('can:view,photo');
+        Route::delete('/photo-captures/{photo}', [PhotoCaptureController::class, 'destroy'])->middleware('can:delete,photo');
     });
     
     // Data Entry Routes
@@ -164,6 +172,14 @@ Route::middleware(['auth:sanctum', 'user.active'])->prefix('v1')->group(function
     Route::get('/profile', [AuthController::class, 'showProfileForm']);
     Route::put('/profile', [AuthController::class, 'updateProfile']);
     Route::put('/change-password', [AuthController::class, 'changePassword']);
+    
+    // User Profile Routes (alias for Flutter compatibility)
+    Route::get('/user', [AuthController::class, 'showProfileForm']);
+    Route::put('/user', [AuthController::class, 'updateProfile']);
+    
+    // Sync Routes
+    Route::get('/sync/status', [SyncController::class, 'status']);
+    Route::post('/sync/bulk', [SyncController::class, 'bulkSync']);
 });
 
 // API Documentation Route

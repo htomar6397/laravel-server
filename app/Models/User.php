@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * User Model
@@ -32,7 +33,7 @@ use Illuminate\Support\Facades\Hash;
  */
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -139,6 +140,14 @@ class User extends Authenticatable
     public function projects()
     {
         return $this->hasMany(Project::class, 'created_by');
+    }
+
+    /**
+     * Get the data entries created by the user
+     */
+    public function dataEntries()
+    {
+        return $this->hasMany(DataEntry::class, 'entered_by');
     }
 
     /**
@@ -430,7 +439,10 @@ class User extends Authenticatable
         $permissions = [];
         foreach ($this->roles as $role) {
             if ($role->permissions) {
-                $permissions = array_merge($permissions, $role->permissions);
+                $rolePermissions = is_array($role->permissions) 
+                    ? $role->permissions 
+                    : json_decode($role->permissions, true) ?? [];
+                $permissions = array_merge($permissions, $rolePermissions);
             }
         }
         return array_unique($permissions);

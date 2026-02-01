@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Expenditure, FileAttachment, Notification, Project, User};
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
  */
 class ExpenditureController extends Controller
 {
+    use ApiResponseTrait;
     /**
      * Display a listing of expenditures
      */
@@ -126,9 +128,20 @@ class ExpenditureController extends Controller
         // Notify relevant users
         $this->notifyRelevantUsers($expenditure, 'created');
 
-        return redirect()
-            ->route('expenditures.show', $expenditure)
-            ->with('success', 'Expenditure created successfully!');
+        // Load relationships for response
+        $expenditure->load([
+            'project',
+            'enteredBy',
+            'approvedBy',
+            'verifiedBy',
+            'fileAttachments'
+        ]);
+
+        return $this->successResponse(
+            $expenditure,
+            'Expenditure created successfully!',
+            201
+        );
     }
 
     /**
@@ -138,13 +151,13 @@ class ExpenditureController extends Controller
     {
         $expenditure->load([
             'project',
-            'enterer',
-            'approver',
-            'verifier',
-            'fileAttachments.uploader'
+            'enteredBy',
+            'approvedBy',
+            'verifiedBy',
+            'fileAttachments'
         ]);
 
-        return view('expenditures.show', compact('expenditure'));
+        return $this->successResponse($expenditure);
     }
 
     /**
@@ -199,9 +212,19 @@ class ExpenditureController extends Controller
             }
         }
 
-        return redirect()
-            ->route('expenditures.show', $expenditure)
-            ->with('success', 'Expenditure updated successfully!');
+        // Load relationships for response
+        $expenditure->load([
+            'project',
+            'enteredBy',
+            'approvedBy',
+            'verifiedBy',
+            'fileAttachments'
+        ]);
+
+        return $this->successResponse(
+            $expenditure,
+            'Expenditure updated successfully!'
+        );
     }
 
     /**
@@ -215,9 +238,10 @@ class ExpenditureController extends Controller
 
         $expenditure->delete();
 
-        return redirect()
-            ->route('expenditures.index')
-            ->with('success', 'Expenditure deleted successfully!');
+        return $this->successResponse(
+            null,
+            'Expenditure deleted successfully!'
+        );
     }
 
     /**

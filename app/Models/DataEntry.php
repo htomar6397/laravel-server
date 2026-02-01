@@ -178,11 +178,35 @@ class DataEntry extends Model
     }
 
     /**
+     * Alias for enterer (for consistency)
+     */
+    public function enteredBy()
+    {
+        return $this->enterer();
+    }
+
+    /**
      * Get the user who verified the data
      */
     public function verifier()
     {
         return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /**
+     * Alias for verifier (for consistency)
+     */
+    public function verifiedBy()
+    {
+        return $this->verifier();
+    }
+
+    /**
+     * Get all file attachments for the data entry
+     */
+    public function fileAttachments()
+    {
+        return $this->morphMany(FileAttachment::class, 'entity');
     }
 
     // ========================================================================

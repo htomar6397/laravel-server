@@ -153,6 +153,14 @@ class Project extends Model
     }
 
     /**
+     * Get the data entries for the project
+     */
+    public function dataEntries()
+    {
+        return $this->hasMany(DataEntry::class);
+    }
+
+    /**
      * Get the expenditures for the project
      */
     public function expenditures()

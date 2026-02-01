@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Project, User, Expenditure, PhotoCapture, DataEntry, Notification, Theme, OrganizationalUnit};
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -14,6 +15,7 @@ use Carbon\Carbon;
  */
 class DashboardController extends Controller
 {
+    use ApiResponseTrait;
     /**
      * Display the main dashboard
      */
@@ -323,7 +325,7 @@ class DashboardController extends Controller
         $startDate = $request->get('start_date', now()->subMonths(12)->format('Y-m-d'));
         $endDate = $request->get('end_date', now()->format('Y-m-d'));
 
-        return response()->json([
+        return $this->successResponse([
             'project_stats' => $this->getProjectStats($orgUnitId, $startDate, $endDate),
             'financial_stats' => $this->getFinancialStats($orgUnitId, $startDate, $endDate),
             'data_stats' => $this->getDataEntryStats($orgUnitId, $startDate, $endDate),
@@ -331,7 +333,7 @@ class DashboardController extends Controller
             'upcoming_deadlines' => $this->getUpcomingDeadlines($orgUnitId),
             'performance_overview' => $this->getPerformanceOverview($orgUnitId),
             'notifications' => $user->unreadNotifications()->take(5)->get()->map->getSummary(),
-        ]);
+        ], 'Dashboard data retrieved successfully');
     }
 
     /**
@@ -347,10 +349,10 @@ class DashboardController extends Controller
             ->get()
             ->map->getSummary();
 
-        return response()->json([
+        return $this->successResponse([
             'notifications' => $notifications,
             'unread_count' => $user->unreadNotifications()->count(),
-        ]);
+        ], 'Notifications retrieved successfully');
     }
 
     /**
@@ -363,7 +365,7 @@ class DashboardController extends Controller
         
         $notification->markAsRead();
 
-        return response()->json(['success' => true]);
+        return $this->successResponse(null, 'Notification marked as read');
     }
 
     /**
@@ -374,6 +376,137 @@ class DashboardController extends Controller
         $user = $request->user();
         $user->unreadNotifications()->update(['is_read' => true, 'read_at' => now()]);
 
-        return response()->json(['success' => true]);
+        return $this->successResponse(null, 'All notifications marked as read');
+    }
+
+    /**
+     * Get dashboard statistics (API endpoint)
+     */
+    public function stats(Request $request)
+    {
+        $user = $request->user();
+        $orgUnitId = $user->org_unit_id;
+
+        $startDate = $request->get('start_date', now()->subMonths(12)->format('Y-m-d'));
+        $endDate = $request->get('end_date', now()->format('Y-m-d'));
+
+        return $this->successResponse([
+            'projects' => $this->getProjectStats($orgUnitId, $startDate, $endDate),
+            'financial' => $this->getFinancialStats($orgUnitId, $startDate, $endDate),
+            'data_entries' => $this->getDataEntryStats($orgUnitId, $startDate, $endDate),
+            'performance' => $this->getPerformanceOverview($orgUnitId),
+            'themes' => $this->getThemeDistribution($orgUnitId),
+            'metadata' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'generated_at' => now()->toISOString(),
+            ]
+        ], 'Dashboard statistics retrieved successfully');
+    }
+
+    /**
+     * Get project-specific statistics (API endpoint)
+     */
+    public function projectStats(Request $request, $projectId)
+    {
+        $user = $request->user();
+        $project = Project::with(['theme', 'organizationalUnit', 'indicators'])->findOrFail($projectId);
+
+        // Check if user has access to this project
+        if ($user->org_unit_id && $user->org_unit_id !== $project->org_unit_id && !$user->hasRole('Admin')) {
+            return $this->errorResponse('Unauthorized access to this project', null, 403);
+        }
+
+        // Get date range
+        $startDate = $request->get('start_date', $project->start_date ?? now()->subMonths(6)->format('Y-m-d'));
+        $endDate = $request->get('end_date', $project->end_date ?? now()->format('Y-m-d'));
+
+        // Data Entry Statistics
+        $dataEntryStats = DataEntry::where('project_id', $projectId)
+            ->whereBetween('entry_date', [$startDate, $endDate])
+            ->selectRaw('
+                COUNT(*) as total_entries,
+                COUNT(CASE WHEN verification_status = "verified" THEN 1 END) as verified_entries,
+                COUNT(CASE WHEN verification_status = "pending" THEN 1 END) as pending_entries,
+                COUNT(CASE WHEN verification_status = "rejected" THEN 1 END) as rejected_entries
+            ')
+            ->first();
+
+        // Financial Statistics
+        $financialStats = Expenditure::where('project_id', $projectId)
+            ->whereBetween('expenditure_date', [$startDate, $endDate])
+            ->selectRaw('
+                COUNT(*) as total_expenditures,
+                SUM(amount) as total_spent,
+                SUM(CASE WHEN approval_status = "approved" THEN amount ELSE 0 END) as approved_amount,
+                SUM(CASE WHEN approval_status = "pending" THEN amount ELSE 0 END) as pending_amount
+            ')
+            ->first();
+
+        // Photo Statistics
+        $photoStats = PhotoCapture::where('project_id', $projectId)
+            ->whereBetween('captured_at', [$startDate, $endDate])
+            ->selectRaw('
+                COUNT(*) as total_photos,
+                COUNT(CASE WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN 1 END) as geotagged_photos
+            ')
+            ->first();
+
+        // Indicator Performance
+        $indicatorPerformance = $project->indicators->map(function ($indicator) use ($projectId, $startDate, $endDate) {
+            $entries = DataEntry::where('project_id', $projectId)
+                ->where('indicator_id', $indicator->id)
+                ->whereBetween('entry_date', [$startDate, $endDate])
+                ->where('verification_status', 'verified')
+                ->sum('actual_value');
+
+            return [
+                'indicator_id' => $indicator->id,
+                'indicator_name' => $indicator->name,
+                'target' => $indicator->pivot->target_value ?? $indicator->target_value,
+                'achieved' => $entries,
+                'percentage' => $indicator->pivot->target_value 
+                    ? round(($entries / $indicator->pivot->target_value) * 100, 2) 
+                    : 0,
+            ];
+        });
+
+        return $this->successResponse([
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'code' => $project->code,
+                'status' => $project->status,
+                'budget' => $project->budget,
+                'start_date' => $project->start_date,
+                'end_date' => $project->end_date,
+                'theme' => $project->theme?->name,
+                'org_unit' => $project->organizationalUnit?->name,
+            ],
+            'data_entries' => [
+                'total' => $dataEntryStats->total_entries ?? 0,
+                'verified' => $dataEntryStats->verified_entries ?? 0,
+                'pending' => $dataEntryStats->pending_entries ?? 0,
+                'rejected' => $dataEntryStats->rejected_entries ?? 0,
+            ],
+            'financial' => [
+                'budget' => $project->budget ?? 0,
+                'total_spent' => $financialStats->total_spent ?? 0,
+                'approved_amount' => $financialStats->approved_amount ?? 0,
+                'pending_amount' => $financialStats->pending_amount ?? 0,
+                'remaining_budget' => ($project->budget ?? 0) - ($financialStats->approved_amount ?? 0),
+                'expenditure_count' => $financialStats->total_expenditures ?? 0,
+            ],
+            'photos' => [
+                'total' => $photoStats->total_photos ?? 0,
+                'geotagged' => $photoStats->geotagged_photos ?? 0,
+            ],
+            'indicators' => $indicatorPerformance,
+            'metadata' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'generated_at' => now()->toISOString(),
+            ]
+        ], 'Project statistics retrieved successfully');
     }
 }

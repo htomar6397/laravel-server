@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{Indicator, Theme};
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 
 /**
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
  */
 class IndicatorController extends Controller
 {
+    use ApiResponseTrait;
     /**
      * Display a listing of indicators
      */
@@ -240,7 +242,10 @@ class IndicatorController extends Controller
             $indicators = $query->get();
         }
 
-        return response()->json($indicators);
+        return $this->successResponse(
+            $indicators,
+            'Indicators retrieved successfully'
+        );
     }
 
     /**
@@ -248,9 +253,10 @@ class IndicatorController extends Controller
      */
     public function showApi(Indicator $indicator)
     {
-        return response()->json([
-            'indicator' => $indicator->getSummary(),
-        ]);
+        return $this->successResponse(
+            ['indicator' => $indicator->getSummary()],
+            'Indicator details retrieved successfully'
+        );
     }
 
     /**
@@ -271,7 +277,7 @@ class IndicatorController extends Controller
             ->with('project')
             ->get();
 
-        return response()->json([
+        return $this->successResponse([
             'indicator' => $indicator->getSummary(),
             'data_entries' => $dataEntries->map(function ($entry) {
                 return [
@@ -291,6 +297,6 @@ class IndicatorController extends Controller
                     'status' => $pi->achievement_status,
                 ];
             }),
-        ]);
+        ], 'Indicator performance data retrieved successfully');
     }
 }

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 2);
             $table->string('currency', 3)->default('TZS');
             $table->date('expenditure_date');
-            $table->enum('category', ['PERSONNEL', 'EQUIPMENT', 'MATERIALS', 'SERVICES', 'TRAVEL', 'OVERHEAD', 'OTHER'])->default('OTHER');
+            $table->string('category', 50)->default('Other');
             $table->string('subcategory', 100)->nullable();
             $table->string('vendor', 255)->nullable();
             $table->string('invoice_number', 100)->nullable();

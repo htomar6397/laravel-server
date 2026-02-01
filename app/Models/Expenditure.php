@@ -83,13 +83,12 @@ class Expenditure extends Model
     /**
      * Category constants
      */
-    const CATEGORY_PERSONNEL = 'PERSONNEL';
-    const CATEGORY_EQUIPMENT = 'EQUIPMENT';
-    const CATEGORY_MATERIALS = 'MATERIALS';
-    const CATEGORY_SERVICES = 'SERVICES';
-    const CATEGORY_TRAVEL = 'TRAVEL';
-    const CATEGORY_OVERHEAD = 'OVERHEAD';
-    const CATEGORY_OTHER = 'OTHER';
+    const CATEGORY_MATERIALS = 'Materials';
+    const CATEGORY_LABOR = 'Labor';
+    const CATEGORY_EQUIPMENT = 'Equipment';
+    const CATEGORY_TRANSPORT = 'Transport';
+    const CATEGORY_SERVICES = 'Services';
+    const CATEGORY_OTHER = 'Other';
 
     /**
      * Status constants
@@ -105,12 +104,11 @@ class Expenditure extends Model
     public static function categories(): array
     {
         return [
-            self::CATEGORY_PERSONNEL,
-            self::CATEGORY_EQUIPMENT,
             self::CATEGORY_MATERIALS,
+            self::CATEGORY_LABOR,
+            self::CATEGORY_EQUIPMENT,
+            self::CATEGORY_TRANSPORT,
             self::CATEGORY_SERVICES,
-            self::CATEGORY_TRAVEL,
-            self::CATEGORY_OVERHEAD,
             self::CATEGORY_OTHER,
         ];
     }
@@ -206,6 +204,30 @@ class Expenditure extends Model
     public function enterer()
     {
         return $this->belongsTo(User::class, 'entered_by');
+    }
+
+    /**
+     * Alias for enterer (for consistency)
+     */
+    public function enteredBy()
+    {
+        return $this->enterer();
+    }
+
+    /**
+     * Alias for approver (for consistency)
+     */
+    public function approvedBy()
+    {
+        return $this->approver();
+    }
+
+    /**
+     * Alias for verifier (for consistency)
+     */
+    public function verifiedBy()
+    {
+        return $this->verifier();
     }
 
     /**

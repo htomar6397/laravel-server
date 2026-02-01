@@ -163,6 +163,14 @@ class PhotoCapture extends Model
     }
 
     /**
+     * Alias for capturer (for consistency)
+     */
+    public function capturedBy()
+    {
+        return $this->capturer();
+    }
+
+    /**
      * Get all file attachments for the photo
      */
     public function fileAttachments()

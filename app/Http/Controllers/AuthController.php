@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{AuditLog, User};
+use App\Traits\ApiResponseTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -50,6 +51,8 @@ use Illuminate\Validation\Rules\Password;
  */
 class AuthController extends Controller
 {
+    use ApiResponseTrait;
+    
     /**
      * Show the login form
      */
@@ -68,8 +71,8 @@ class AuthController extends Controller
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
-     *             required={"username","password"},
-     *             @OA\Property(property="username", type="string", example="admin"),
+     *             required={"email","password"},
+     *             @OA\Property(property="email", type="string", format="email", example="admin@kmc.go.tz"),
      *             @OA\Property(property="password", type="string", format="password", example="password")
      *         )
      *     ),
@@ -105,7 +108,7 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string',
+            'email' => 'required|string|email',
             'password' => 'required|string',
         ]);
 
@@ -125,7 +128,7 @@ class AuthController extends Controller
                 ->withInput($request->except('password'));
         }
 
-        $credentials = $request->only('username', 'password');
+        $credentials = $request->only('email', 'password');
         $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
@@ -143,7 +146,7 @@ class AuthController extends Controller
                 }
                 
                 return back()
-                    ->withErrors(['username' => 'Your account has been deactivated.'])
+                    ->withErrors(['email' => 'Your account has been deactivated.'])
                     ->withInput($request->except('password'));
             }
             
