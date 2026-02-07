@@ -1,11 +1,42 @@
 ---
 deployment:
-    tasks:
-        - export DEPLOYPATH=/home/kmcserver/public_html
-        - /bin/cp -r . $DEPLOYPATH
-        - cd $DEPLOYPATH
-        - composer install --no-dev --optimize-autoloader
-        - php artisan migrate --force
-        - php artisan config:cache
-        - php artisan route:cache
-        - php artisan view:cache
+  tasks:
+    # Main Laravel app folder (outside public_html)
+    - export APPPATH=/home/kmcserver/laravelapp
+    - export PUBLICPATH=/home/kmcserver/public_html
+
+    # Copy project to laravelapp
+    - /bin/rm -rf $APPPATH
+    - /bin/mkdir -p $APPPATH
+    - /bin/cp -R * $APPPATH
+
+    # Install PHP dependencies
+    - cd $APPPATH
+    - /usr/local/bin/composer install --no-interaction --prefer-dist --optimize-autoloader
+
+    # Install Node dependencies and build assets
+    - /usr/bin/npm install
+    - /usr/bin/npm run build
+
+    # Clear public_html and recreate
+    - /bin/rm -rf $PUBLICPATH/*
+    - /bin/mkdir -p $PUBLICPATH
+
+    # Copy public folder contents into public_html
+    - /bin/cp -R $APPPATH/public/* $PUBLICPATH/
+
+    # Permissions
+    - /bin/chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache
+
+    # Laravel cache optimize
+    - cd $APPPATH
+    - /usr/local/bin/php artisan config:clear
+    - /usr/local/bin/php artisan cache:clear
+    - /usr/local/bin/php artisan route:clear
+    - /usr/local/bin/php artisan view:clear
+    - /usr/local/bin/php artisan config:cache
+    - /usr/local/bin/php artisan route:cache
+    - /usr/local/bin/php artisan view:cache
+
+    # Storage link inside public_html
+    - /usr/local/bin/php artisan storage:link
