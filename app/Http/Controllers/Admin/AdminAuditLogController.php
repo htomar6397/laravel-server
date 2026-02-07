@@ -24,8 +24,7 @@ class AdminAuditLogController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('action', 'like', "%{$search}%")
-                    ->orWhere('model_type', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('entity_type', 'like', "%{$search}%")
                     ->orWhere('ip_address', 'like', "%{$search}%")
                     ->orWhereHas('user', function ($q) use ($search) {
                         $q->where('full_name', 'like', "%{$search}%");
@@ -40,7 +39,7 @@ class AdminAuditLogController extends Controller
 
         // Filter by model type
         if ($request->filled('model')) {
-            $query->where('model_type', 'like', "%{$request->model}%");
+            $query->where('entity_type', 'like', "%{$request->model}%");
         }
 
         // Filter by user
@@ -67,9 +66,9 @@ class AdminAuditLogController extends Controller
             'logs' => $logs,
             'filters' => $request->only(['search', 'action', 'model', 'user', 'date_from', 'date_to']),
             'actions' => AuditLog::distinct('action')->pluck('action'),
-            'models' => AuditLog::distinct('model_type')->pluck('model_type')->map(function ($model) {
+            'models' => AuditLog::distinct('entity_type')->pluck('entity_type')->map(function ($model) {
                 return class_basename($model);
-            })->unique()->values(),
+            })->filter()->unique()->values(),
         ]);
     }
 

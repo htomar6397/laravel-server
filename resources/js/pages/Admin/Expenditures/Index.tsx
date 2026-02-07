@@ -26,7 +26,7 @@ interface ExpendituresIndexProps {
         links: Array<{ url: string | null; label: string; active: boolean }>;
         meta: { current_page: number; last_page: number; per_page: number; total: number; from: number; to: number };
     };
-    filters: any;
+    filters: Record<string, unknown>;
     projects: Array<{ id: number; name: string }>;
     statuses: string[];
     categories: string[];
@@ -369,7 +369,7 @@ export default function Index({ expenditures, filters, projects, statuses, categ
                                 Showing {expenditures.meta.from || 0} to {expenditures.meta.to || 0} of {expenditures.meta.total || 0} expenditures
                             </div>
                             <div className="flex gap-2">
-                                {expenditures.links.map((link: any, index: number) => (
+                                {expenditures.links.map((link: { url: string | null; label: string; active: boolean }, index: number) => (
                                     <Link
                                         key={index}
                                         href={link.url || '#'}

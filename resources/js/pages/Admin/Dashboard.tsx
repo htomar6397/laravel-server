@@ -21,11 +21,8 @@ interface DashboardProps {
     projectsByStatus: Array<{ status: string; count: number }>;
     dataEntriesByMonth: Array<{ month: string; count: number }>;
     expendituresByCategory: Array<{ category: string; total: number }>;
-    topProjectsByBudget: Array<any>;
-    fieldOfficerActivity: Array<any>;
-    recentDataEntries: Array<any>;
-    recentExpenditures: Array<any>;
-    syncStats: any;
+    fieldOfficerActivity: Array<Record<string, unknown>>;
+    recentDataEntries: Array<Record<string, unknown>>;
 }
 
 export default function Dashboard({
@@ -33,10 +30,8 @@ export default function Dashboard({
     projectsByStatus,
     dataEntriesByMonth,
     expendituresByCategory,
-    topProjectsByBudget,
     fieldOfficerActivity,
     recentDataEntries,
-    recentExpenditures,
 }: DashboardProps) {
     const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 

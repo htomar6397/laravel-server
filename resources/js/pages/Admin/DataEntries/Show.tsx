@@ -1,5 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Check, X, FileText, Calendar, User, TrendingUp, Paperclip, Save } from 'lucide-react';
+import { ArrowLeft, Check, X, FileText, Calendar, User, Paperclip } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
 
 interface Project {

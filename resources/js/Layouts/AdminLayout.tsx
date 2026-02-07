@@ -9,14 +9,12 @@ import {
     Settings,
     Menu,
     X,
-    Bell,
     BarChart3,
     TrendingUp,
     Shield,
     Building2,
     Palette,
     FileSearch,
-    BellRing,
     Sparkles,
     FileBarChart,
     Activity,
@@ -26,6 +24,8 @@ import {
 } from 'lucide-react';
 import type { PropsWithChildren } from 'react';
 import { useState, useEffect, useRef } from 'react';
+import { ErrorBoundary } from '@/components';
+import { useErrorReporting } from '@/hooks/useErrorReporting';
 import type { Auth } from '@/types';
 
 interface AdminLayoutProps {
@@ -40,6 +40,7 @@ export default function AdminLayout({ children, header }: PropsWithChildren<Admi
     const user = auth.user;
     const currentUrl = page.url || window.location.pathname || '';
     const profileDropdownRef = useRef<HTMLDivElement>(null);
+    const { reportError } = useErrorReporting();
 
     // Close profile dropdown when clicking outside
     useEffect(() => {
@@ -100,7 +101,7 @@ export default function AdminLayout({ children, header }: PropsWithChildren<Admi
         {
             title: 'System',
             items: [
-                { name: 'Notifications', href: '/admin/notifications', icon: BellRing },
+                // { name: 'Notifications', href: '/admin/notifications', icon: BellRing },
                 { name: 'Settings', href: '/admin/settings', icon: Settings },
             ],
         },
@@ -170,10 +171,10 @@ export default function AdminLayout({ children, header }: PropsWithChildren<Admi
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <button className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                            {/* <button className="relative rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
                                 <Bell className="h-6 w-6" />
                                 <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-                            </button>
+                            </button> */}
 
                             <div className="relative" ref={profileDropdownRef}>
                                 <button
@@ -223,7 +224,18 @@ export default function AdminLayout({ children, header }: PropsWithChildren<Admi
                 </div>
 
                 {/* Page Content */}
-                <main className="p-4 sm:p-6 lg:p-8">{children}</main>
+                <main className="p-4 sm:p-6 lg:p-8">
+                    <ErrorBoundary
+                        onError={(error, errorInfo) => {
+                            const fixedErrorInfo = { ...errorInfo, componentStack: errorInfo.componentStack ?? undefined };
+                            reportError(error, fixedErrorInfo);
+                        }}
+                        showDetails={process.env.NODE_ENV === 'development'}
+                        className="min-h-[calc(100vh-8rem)]"
+                    >
+                        {children}
+                    </ErrorBoundary>
+                </main>
             </div>
 
             {/* Mobile Sidebar Overlay */}

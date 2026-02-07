@@ -20,6 +20,7 @@ use App\Http\Controllers\Admin\AdminNotificationController;
 use App\Http\Controllers\Admin\AdminAIReportController;
 use App\Http\Controllers\Admin\AdminQuarterlyPackController;
 use App\Http\Controllers\Admin\AdminDHIS2Controller;
+use App\Http\Controllers\Admin\AdminPlanRepController;
 use App\Http\Controllers\Admin\AdminProfileController;
 
 Route::get('/', function () {
@@ -37,7 +38,7 @@ Route::get('/', function () {
         return redirect()->route('admin.dashboard');
     }
     
-    return Inertia::render('welcome');
+    return redirect()->route('login');
 })->name('home');
 
 // Authentication Routes

@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Save, Settings as SettingsIcon, Bell, Shield, Database, Mail } from 'lucide-react';
+import { Save, Settings as SettingsIcon, Shield, Database, Mail } from 'lucide-react';
 import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 
@@ -9,8 +9,8 @@ export default function Index() {
     const { data, setData, post, processing } = useForm({
         site_name: 'KMC M&E System',
         site_email: 'admin@kmc.go.tz',
-        notifications_enabled: true,
-        email_notifications: true,
+        // notifications_enabled: true,
+        // email_notifications: true,
         backup_enabled: true,
         backup_frequency: 'daily',
     });
@@ -22,7 +22,7 @@ export default function Index() {
 
     const tabs = [
         { id: 'general', name: 'General', icon: SettingsIcon },
-        { id: 'notifications', name: 'Notifications', icon: Bell },
+        // { id: 'notifications', name: 'Notifications', icon: Bell },
         { id: 'security', name: 'Security', icon: Shield },
         { id: 'backup', name: 'Backup', icon: Database },
         { id: 'email', name: 'Email', icon: Mail },
@@ -92,6 +92,7 @@ export default function Index() {
                         )}
 
                         {/* Notification Settings */}
+                        {/*
                         {activeTab === 'notifications' && (
                             <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                                 <h3 className="mb-4 text-lg font-semibold text-gray-900">Notification Settings</h3>
@@ -119,6 +120,7 @@ export default function Index() {
                                 </div>
                             </div>
                         )}
+                        */}
 
                         {/* Security Settings */}
                         {activeTab === 'security' && (

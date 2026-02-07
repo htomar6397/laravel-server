@@ -52,7 +52,7 @@ export default function Login() {
                                     className={`w-full rounded-lg border px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
                                         errors.email ? 'border-red-500' : 'border-gray-300'
                                     }`}
-                                    placeholder="admin@kmc.gov.gh"
+                                    placeholder="Enter your email"
                                     required
                                     autoFocus
                                 />
@@ -72,7 +72,7 @@ export default function Login() {
                                     className={`w-full rounded-lg border px-4 py-3 transition focus:border-transparent focus:ring-2 focus:ring-blue-500 ${
                                         errors.password ? 'border-red-500' : 'border-gray-300'
                                     }`}
-                                    placeholder="••••••••"
+                                    placeholder="Enter your password"
                                     required
                                 />
                                 {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
@@ -123,11 +123,13 @@ export default function Login() {
                     </div>
 
                     {/* Development Credentials */}
+                    {/*
                     <div className="mt-6 rounded-lg bg-white/10 p-4 text-sm text-white backdrop-blur-sm">
                         <p className="mb-2 font-semibold">📝 Demo Credentials:</p>
                         <p className="font-mono">Email: admin@kmc.gov.gh</p>
                         <p className="font-mono">Password: (check database)</p>
                     </div>
+                    */}
                 </div>
             </div>
         </>

@@ -10,7 +10,6 @@ interface ReportsIndexProps {
 export default function Index({ filters }: ReportsIndexProps) {
     const [dateFrom, setDateFrom] = useState(filters.date_from || '');
     const [dateTo, setDateTo] = useState(filters.date_to || '');
-    const [reportType, setReportType] = useState(filters.type || '');
 
     const reportTypes = [
         {
@@ -85,7 +84,6 @@ export default function Index({ filters }: ReportsIndexProps) {
                     const Icon = report.icon;
                     const bgColor = `bg-${report.color}-50`;
                     const textColor = `text-${report.color}-600`;
-                    const hoverColor = `hover:bg-${report.color}-100`;
 
                     return (
                         <div key={report.id} className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">

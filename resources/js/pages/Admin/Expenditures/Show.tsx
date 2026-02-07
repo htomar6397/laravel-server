@@ -1,5 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { ArrowLeft, CheckCircle, XCircle, AlertCircle, Calendar, DollarSign, User, FileText, Building2, Receipt, Package } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Calendar, User, FileText, Building2, Receipt, Package } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
 
 interface User {

@@ -6,14 +6,14 @@ interface AuditLog {
     id: number;
     user?: { id: number; full_name: string; email: string; username: string };
     action: string;
-    model_type: string;
-    model_id?: number;
-    description?: string;
+    entity_type: string;
+    entity_id?: number;
     ip_address?: string;
     user_agent?: string;
-    old_values?: Record<string, any>;
-    new_values?: Record<string, any>;
+    old_values?: Record<string, unknown>;
+    new_values?: Record<string, unknown>;
     created_at: string;
+    description?: string;
 }
 
 interface ShowProps {
@@ -76,8 +76,8 @@ export default function Show({ log }: ShowProps) {
                         <div>
                             <p className="text-sm font-medium text-gray-700">Model</p>
                             <p className="text-sm text-gray-900">
-                                {log.model_type ? log.model_type.split('\\').pop() : '-'}
-                                {log.model_id && ` #${log.model_id}`}
+                                {log.entity_type ? log.entity_type.split('\\').pop() : '-'}
+                                {log.entity_id && ` #${log.entity_id}`}
                             </p>
                         </div>
                     </div>

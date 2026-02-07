@@ -1,6 +1,5 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Check } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowLeft, Save } from 'lucide-react';
 import AdminLayout from '@/Layouts/AdminLayout';
 
 interface CreateProps {

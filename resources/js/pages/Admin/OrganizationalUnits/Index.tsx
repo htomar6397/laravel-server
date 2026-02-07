@@ -24,10 +24,9 @@ interface OrganizationalUnitsIndexProps {
         meta?: { current_page: number; last_page: number; per_page: number; total: number; from: number; to: number };
     };
     filters: { search?: string; level?: string; parent?: string; status?: string };
-    parents: Array<{ id: number; name: string; level: string }>;
 }
 
-export default function Index({ units, filters, parents }: OrganizationalUnitsIndexProps) {
+export default function Index({ units, filters }: OrganizationalUnitsIndexProps) {
     const [search, setSearch] = useState(filters.search || '');
     const [levelFilter, setLevelFilter] = useState(filters.level || '');
     const [statusFilter, setStatusFilter] = useState(filters.status || '');
