@@ -16,8 +16,9 @@ deployment:
     - /usr/local/bin/composer install --no-interaction --prefer-dist --optimize-autoloader
 
     # Install Node dependencies and build assets
-    - /usr/local/bin/npm install || npm install
-    - /usr/local/bin/npm run build || npm run build
+    - /home/kmcserver/nodevenv/node/12/bin/npm install
+    - /home/kmcserver/nodevenv/node/12/bin/npm run build
+
 
     # Clear public_html and recreate
     - /bin/rm -rf $PUBLICPATH/*
