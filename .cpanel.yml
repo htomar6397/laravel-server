@@ -31,10 +31,12 @@ deployment:
     - find $APPPATH/public/build -type f ! -name "manifest.json" -delete
 
     # Permissions
-    - /bin/mkdir -p $APPPATH/storage
+    - /bin/mkdir -p $APPPATH/storage/framework/views
+    - /bin/mkdir -p $APPPATH/storage/framework/cache
+    - /bin/mkdir -p $APPPATH/storage/framework/sessions
     - /bin/mkdir -p $APPPATH/bootstrap/cache
     - /bin/chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache
-    
+
     # Fix index.php paths
     - /bin/sed -i "s|__DIR__.'/../vendor/autoload.php'|__DIR__.'/../laravelapp/vendor/autoload.php'|g" $PUBLICPATH/index.php
     - /bin/sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/../laravelapp/bootstrap/app.php'|g" $PUBLICPATH/index.php
