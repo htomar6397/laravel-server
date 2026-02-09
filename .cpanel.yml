@@ -6,11 +6,7 @@ deployment:
     - export PUBLICPATH=/home/kmcserver/public_html
 
     # Copy project to laravelapp
-    - find $APPPATH -mindepth 1 -maxdepth 1 \
-        ! -name ".env" \
-        ! -name "vendor" \
-        ! -name "node_modules" \
-        -exec rm -rf {} \;
+    - find $APPPATH -mindepth 1 -maxdepth 1 ! -name ".env" ! -name "vendor" ! -name "node_modules" -exec rm -rf {} \;
 
     - /bin/mkdir -p $APPPATH
     - /bin/rsync -av --exclude='.env' --exclude='storage' --exclude='vendor' ./ $APPPATH/
@@ -37,7 +33,8 @@ deployment:
 
     # Permissions
     - /bin/chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache
-         # Fix index.php
+    
+    # Fix index.php
     - /bin/sed -i "s|__DIR__.'/../vendor/autoload.php'|__DIR__.'/../laravelapp/vendor/autoload.php'|g" $PUBLICPATH/index.php
     - /bin/sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/../laravelapp/bootstrap/app.php'|g" $PUBLICPATH/index.php
 
