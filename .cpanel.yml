@@ -1,30 +1,32 @@
 ---
 deployment:
   tasks:
-    # Main Laravel app folder (outside public_html)
     - export APPPATH=/home/kmcserver/laravelapp
     - export PUBLICPATH=/home/kmcserver/public_html
 
-    # Copy project to laravelapp
+    # Create laravelapp folder
+    - /bin/mkdir -p $APPPATH
+
+    # Remove old app files except env/vendor/node_modules
     - find $APPPATH -mindepth 1 -maxdepth 1 ! -name ".env" ! -name "vendor" ! -name "node_modules" -exec rm -rf {} \;
 
-    - /bin/mkdir -p $APPPATH
-    - tar -cf - --exclude='.env' --exclude='storage' --exclude='vendor' . | (cd $APPPATH && tar -xf -)
+    # Copy new code into laravelapp
+    - tar -cf - --exclude='.env' --exclude='storage' --exclude='vendor' --exclude='node_modules' . | (cd $APPPATH && tar -xf -)
 
-    # Install PHP dependencies
+    # Composer install
     - cd $APPPATH
     - /usr/local/bin/composer install --no-interaction --prefer-dist --optimize-autoloader
 
-    # Install Node dependencies and build assets
+    # Node build
+    - cd $APPPATH
     - /home/kmcserver/nodevenv/node/12/bin/npm install
     - /home/kmcserver/nodevenv/node/12/bin/npm run build
 
-
-    # Clear public_html and recreate
+    # Clean public_html
     - /bin/rm -rf $PUBLICPATH/*
     - /bin/mkdir -p $PUBLICPATH
 
-    # Copy public folder contents into public_html
+    # Copy public content to public_html
     - /bin/cp -R $APPPATH/public/* $PUBLICPATH/
 
     #keep only manifest.json in public/build folder
@@ -34,11 +36,11 @@ deployment:
     # Permissions
     - /bin/chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache
 
-    # Fix index.php
+    # Fix index.php paths
     - /bin/sed -i "s|__DIR__.'/../vendor/autoload.php'|__DIR__.'/../laravelapp/vendor/autoload.php'|g" $PUBLICPATH/index.php
     - /bin/sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/../laravelapp/bootstrap/app.php'|g" $PUBLICPATH/index.php
 
-    # Laravel cache optimize
+    # Cache optimize
     - cd $APPPATH
     - /usr/local/bin/php artisan config:clear
     - /usr/local/bin/php artisan cache:clear
@@ -48,5 +50,5 @@ deployment:
     - /usr/local/bin/php artisan route:cache
     - /usr/local/bin/php artisan view:cache
 
-    # Storage link inside public_html
+    # Storage link
     - /usr/local/bin/php artisan storage:link
