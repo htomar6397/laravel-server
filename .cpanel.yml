@@ -16,11 +16,16 @@ deployment:
     # Composer install
     - cd $APPPATH
     - /usr/local/bin/composer install --no-interaction --prefer-dist --optimize-autoloader
-
-    # Node build
+    
+    # Node install and build
     - cd $APPPATH
-    - /opt/alt/alt-nodejs22/root/usr/bin/npm install
-    - /opt/alt/alt-nodejs22/root/usr/bin/npm run build
+    - export PATH=/opt/alt/alt-nodejs22/root/usr/bin:$PATH
+
+    - node -v
+    - npm -v
+
+    - npm install
+    - npm run build
 
 
     # Clean public_html
