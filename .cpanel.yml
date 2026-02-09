@@ -9,7 +9,7 @@ deployment:
     - find $APPPATH -mindepth 1 -maxdepth 1 ! -name ".env" ! -name "vendor" ! -name "node_modules" -exec rm -rf {} \;
 
     - /bin/mkdir -p $APPPATH
-    - /bin/rsync -av --exclude='.env' --exclude='storage' --exclude='vendor' ./ $APPPATH/
+    - /usr/bin/rsync -av --exclude='.env' --exclude='storage' --exclude='vendor' ./ $APPPATH/
 
 
     # Install PHP dependencies
