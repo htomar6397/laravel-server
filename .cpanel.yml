@@ -19,8 +19,9 @@ deployment:
 
     # Node build
     - cd $APPPATH
-    - /home/kmcserver/nodevenv/node/12/bin/npm install
-    - /home/kmcserver/nodevenv/node/12/bin/npm run build
+    - /opt/alt/alt-nodejs18/root/usr/bin/npm install
+    - /opt/alt/alt-nodejs18/root/usr/bin/npm run build
+
 
     # Clean public_html
     - /bin/rm -rf $PUBLICPATH/*
