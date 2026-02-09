@@ -6,18 +6,24 @@ deployment:
     - export PUBLICPATH=/home/kmcserver/public_html
 
     # Copy project to laravelapp
-    - /bin/rm -rf $APPPATH
+    - find $APPPATH -mindepth 1 -maxdepth 1 \
+        ! -name ".env" \
+        ! -name "vendor" \
+        ! -name "node_modules" \
+        -exec rm -rf {} \;
+
     - /bin/mkdir -p $APPPATH
-    - /bin/cp -R * $APPPATH
+    - /bin/rsync -av --exclude='.env' --exclude='storage' --exclude='vendor' ./ $APPPATH/
+
 
     # Install PHP dependencies
     - cd $APPPATH
     - /usr/local/bin/composer install --no-interaction --prefer-dist --optimize-autoloader
 
     # Install Node dependencies and build assets
-    - /usr/bin/npm install
-    - /usr/bin/npm run build
-
+    - /usr/local/bin/npm install || npm install
+    - /usr/local/bin/npm run build || npm run build
+   
     # Clear public_html and recreate
     - /bin/rm -rf $PUBLICPATH/*
     - /bin/mkdir -p $PUBLICPATH
@@ -25,8 +31,15 @@ deployment:
     # Copy public folder contents into public_html
     - /bin/cp -R $APPPATH/public/* $PUBLICPATH/
 
+    #keep only manifest.json in public/build folder
+    - find $APPPATH/public -mindepth 1 -maxdepth 1 ! -name "build" -exec rm -rf {} \;
+    - find $APPPATH/public/build -type f ! -name "manifest.json" -delete
+
     # Permissions
     - /bin/chmod -R 775 $APPPATH/storage $APPPATH/bootstrap/cache
+         # Fix index.php
+    - /bin/sed -i "s|__DIR__.'/../vendor/autoload.php'|__DIR__.'/../laravelapp/vendor/autoload.php'|g" $PUBLICPATH/index.php
+    - /bin/sed -i "s|__DIR__.'/../bootstrap/app.php'|__DIR__.'/../laravelapp/bootstrap/app.php'|g" $PUBLICPATH/index.php
 
     # Laravel cache optimize
     - cd $APPPATH
