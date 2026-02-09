@@ -19,8 +19,8 @@ deployment:
 
     # Node build
     - cd $APPPATH
-    - /opt/alt/alt-nodejs18/root/usr/bin/npm install
-    - /opt/alt/alt-nodejs18/root/usr/bin/npm run build
+    - /opt/alt/alt-nodejs22/root/usr/bin/npm install
+    - /opt/alt/alt-nodejs22/root/usr/bin/npm run build
 
 
     # Clean public_html
