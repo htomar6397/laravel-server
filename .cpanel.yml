@@ -7,25 +7,16 @@ deployment:
     # Create laravelapp folder
     - /bin/mkdir -p $APPPATH
 
-    # Remove old app files except env/vendor/node_modules
-    - find $APPPATH -mindepth 1 -maxdepth 1 ! -name ".env" ! -name "vendor" ! -name "node_modules" -exec rm -rf {} \;
+    # Remove old app files except env/vendor
+    - find $APPPATH -mindepth 1 -maxdepth 1 ! -name ".env" ! -name "vendor" -exec rm -rf {} \;
 
     # Copy new code into laravelapp
-    - tar -cf - --exclude='.env' --exclude='storage' --exclude='vendor' --exclude='node_modules' . | (cd $APPPATH && tar -xf -)
+    - tar -cf - --exclude='.env' --exclude='storage' --exclude='vendor' . | (cd $APPPATH && tar -xf -)
 
     # Composer install
     - cd $APPPATH
     - /usr/local/bin/composer install --no-interaction --prefer-dist --optimize-autoloader
     
-    # Node install and build
-    - cd $APPPATH
-    - export PATH=/opt/alt/alt-nodejs22/root/usr/bin:$PATH
-
-    - node -v
-    - npm -v
-
-    - npm install
-    - npm run build
 
 
     # Clean public_html
